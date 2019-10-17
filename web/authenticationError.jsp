@@ -12,7 +12,7 @@
         <link href="css/popup.css" rel="stylesheet" type="text/css"/>
     </head>
     <body>
-        <p><a href="#popup">Abrir Popup</a></p>
+      
         <div id="popup" class="overlay">
             <div id="popupBody">
                 <h2>Error de autenticación</h2>
