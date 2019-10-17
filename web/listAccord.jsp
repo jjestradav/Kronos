@@ -27,6 +27,7 @@
                             <option value="incorDate">Fecha de Incorporación</option>
                             <option value="sessionType">Tipo de Acuerdo</option>
                             <option value="accNumber">Número de Oficio</option>
+                            <option value="expired">Rango de Vencimiento</option>
                             <option value="allAccords">Todos los Acuerdos</option>
                         </select> 
                     </div>
