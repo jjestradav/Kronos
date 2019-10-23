@@ -2,17 +2,18 @@ USE `KRONOS`;
 DROP procedure IF EXISTS insertAccord;
 DELIMITER $$
 USE `KRONOS`$$
-CREATE PROCEDURE insertAccord (IN accNumber VARCHAR(45), IN incorDate DATE, 
+CREATE PROCEDURE insertAccord (IN accNumber VARCHAR(45), IN incorDate DATE, IN incorTime TIME, 
 IN deadLine DATE, IN sessionDate DATE, IN type_id
 CHAR(1), IN observations longtext, IN publics TINYINT(4),
-IN notified TINYINT(4), IN states INT, IN notifDate date)
+IN notified TINYINT(4), IN states INT)
 BEGIN
-INSERT INTO T_ACCORD (ACCNUMBER, INCORDATE, 
-DEADLINE, SESSIONDATE, OBSERVATIONS, PUBLIC, NOTIFIED,  STATE, TYPE_ID, NOTIFDATE) 
-VALUES (accNumber, incorDate, deadLine, sessionDate, observations, publics, notified, states, type_id, notifDate);
+INSERT INTO T_ACCORD (ACCNUMBER, INCORDATE,INCORTIME, 
+DEADLINE, SESSIONDATE, OBSERVATIONS, PUBLIC, NOTIFIED,  STATE, TYPE_ID) 
+VALUES (accNumber, incorDate, incorTime, deadLine, sessionDate, observations, publics, notified, states, type_id);
 commit; 
 END$$
 DELIMITER ;
+
 
 USE `KRONOS`;
 DROP procedure IF EXISTS insertAccPdf;
@@ -25,6 +26,20 @@ insert into T_ACCPDF (ACCORD, URL) values (accord, url);
 commit;  
 end$$ 
 DELIMITER ;
+
+
+USE `KRONOS`;
+DROP procedure IF EXISTS insertAccNotification;
+DELIMiTER $$
+USE `KRONOS`$$
+create procedure insertAccNotification(
+in accord varchar(45))
+begin
+insert into T_NOTIFICATION (ACCORD) values (accord);
+commit;  
+end$$ 
+DELIMITER ;
+
 
 USE `KRONOS`;
 DROP procedure IF EXISTS insertTempUser;
@@ -57,7 +72,7 @@ USE `KRONOS`$$
 create procedure searchAccordType(in type_id char(1))
 begin
 select ACCNUMBER, INCORDATE, 
-DEADLINE, SESSIONDATE, TYPE_ID, OBSERVATIONS, PUBLIC, NOTIFIED,  STATE, NOTIFDATE, T_ACCPDF.URL  from T_ACCORD, T_ACCPDF where ACCNUMBER= T_ACCPDF.ACCORD and T_ACCORD.TYPE_ID = type_id;
+DEADLINE, SESSIONDATE, TYPE_ID, OBSERVATIONS, PUBLIC, NOTIFIED,  STATE, T_ACCPDF.URL  from T_ACCORD, T_ACCPDF where ACCNUMBER= T_ACCPDF.ACCORD and T_ACCORD.TYPE_ID = type_id;
 end$$
 DELIMITER ;
 
@@ -69,7 +84,7 @@ create procedure searchAccordNumber(in accNumber varchar(45)
 )
 begin
 select ACCNUMBER, INCORDATE, 
-DEADLINE, SESSIONDATE, TYPE_ID, OBSERVATIONS, PUBLIC, NOTIFIED,  STATE, NOTIFDATE, T_ACCPDF.URL  from T_ACCORD, T_ACCPDF where ACCNUMBER= T_ACCPDF.ACCORD and T_ACCORD.ACCNUMBER = accNumber;
+DEADLINE, SESSIONDATE, TYPE_ID, OBSERVATIONS, PUBLIC, NOTIFIED,  STATE, T_ACCPDF.URL  from T_ACCORD, T_ACCPDF where ACCNUMBER= T_ACCPDF.ACCORD and T_ACCORD.ACCNUMBER = accNumber;
 end$$
 DELIMITER ; 
 
@@ -81,7 +96,7 @@ create procedure searchAccordIncorDate(in incorDate  date
 )
 begin
 select ACCNUMBER, INCORDATE, 
-DEADLINE, SESSIONDATE, TYPE_ID, OBSERVATIONS, PUBLIC, NOTIFIED,  STATE, NOTIFDATE, T_ACCPDF.URL  from T_ACCORD, T_ACCPDF where ACCNUMBER= T_ACCPDF.ACCORD and T_ACCORD.INCORDATE = incorDate;
+DEADLINE, SESSIONDATE, TYPE_ID, OBSERVATIONS, PUBLIC, NOTIFIED,  STATE, T_ACCPDF.URL  from T_ACCORD, T_ACCPDF where ACCNUMBER= T_ACCPDF.ACCORD and T_ACCORD.INCORDATE = incorDate;
 end$$
 DELIMITER ; 
 
@@ -93,7 +108,7 @@ create procedure searchAccordsessionDate(in sessionDate date
 )
 begin
 select ACCNUMBER, INCORDATE, 
-DEADLINE, SESSIONDATE, TYPE_ID, OBSERVATIONS, PUBLIC, NOTIFIED,  STATE, NOTIFDATE, T_ACCPDF.URL  from T_ACCORD, T_ACCPDF where ACCNUMBER= T_ACCPDF.ACCORD and T_ACCORD.SESSIONDATE = sessionDate;
+DEADLINE, SESSIONDATE, TYPE_ID, OBSERVATIONS, PUBLIC, NOTIFIED,  STATE, T_ACCPDF.URL  from T_ACCORD, T_ACCPDF where ACCNUMBER= T_ACCPDF.ACCORD and T_ACCORD.SESSIONDATE = sessionDate;
 end$$
 DELIMITER ; 
 
@@ -125,7 +140,7 @@ USE `KRONOS`$$
 create procedure searchAllAccords()
 begin
 select ACCNUMBER, INCORDATE, 
-DEADLINE, SESSIONDATE, TYPE_ID, OBSERVATIONS, PUBLIC, NOTIFIED,  STATE, NOTIFDATE,  T_ACCPDF.URL  from T_ACCORD, T_ACCPDF where T_ACCORD.ACCNUMBER= T_ACCPDF.ACCORD;
+DEADLINE, SESSIONDATE, TYPE_ID, OBSERVATIONS, PUBLIC, NOTIFIED,  STATE,  T_ACCPDF.URL  from T_ACCORD, T_ACCPDF where T_ACCORD.ACCNUMBER= T_ACCPDF.ACCORD;
 end$$
 DELIMITER ; 
 
@@ -276,7 +291,7 @@ USE `KRONOS`$$
 create procedure searchExpiredAccords(in actual date, in _limit date)
 begin
 select ACCNUMBER, INCORDATE, 
-DEADLINE, SESSIONDATE, TYPE_ID, OBSERVATIONS, PUBLIC, NOTIFIED,  STATE, NOTIFDATE, T_ACCPDF.URL  from T_ACCORD, T_ACCPDF where ACCNUMBER= T_ACCPDF.ACCORD and T_ACCORD.DEADLINE <=actual and T_ACCORD.DEADLINE >=_limit;
+DEADLINE, SESSIONDATE, TYPE_ID, OBSERVATIONS, PUBLIC, NOTIFIED,  STATE, T_ACCPDF.URL  from T_ACCORD, T_ACCPDF where ACCNUMBER= T_ACCPDF.ACCORD and T_ACCORD.DEADLINE <=actual and T_ACCORD.DEADLINE >=_limit;
 end$$
 DELIMITER ;
 
@@ -289,5 +304,17 @@ in accord varchar(45), in url varchar(100))
 begin
 delete from T_ACCPDF where ACCORD=accord and URL= url; 
 commit;  
+end$$ 
+DELIMITER ;
+
+USE `KRONOS`;
+DROP procedure IF EXISTS emailInfo;
+DELIMiTER $$
+USE `KRONOS`$$
+create procedure emailInfo(
+in today date, in limt date)
+begin
+  select ACCNUMBER, INCORDATE, INCORTIME
+  from T_ACCORD where T_ACCORD.INCORDATE <= today and T_ACCORD.INCORDATE >=limt;
 end$$ 
 DELIMITER ;
