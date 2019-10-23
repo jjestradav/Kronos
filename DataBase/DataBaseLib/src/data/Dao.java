@@ -10,8 +10,10 @@ import java.sql.SQLException;
 import java.text.DateFormat;
 import logic.Accord;
 import java.util.Date;
+import java.time.LocalTime;
 import java.sql.ResultSet;
 import java.text.SimpleDateFormat;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -53,19 +55,21 @@ public class Dao {
         CallableStatement statement = this.db.getConnection().prepareCall("{call insertAccord(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)}");
 
       java.text.DateFormat  format= new SimpleDateFormat("yyyy-dd-MM");
-      String incordate=format.format(acc.getDeadline());
-      String deadline=format.format(acc.getDeadline());
-        
+      acc.setIncorporatedTime(LocalTime.now());
+      
+      int hour=acc.getIncorporatedTime().getHour();
+      int minute=acc.getIncorporatedTime().getMinute();
+      int second=acc.getIncorporatedTime().getSecond();
         statement.setString(1, acc.getAccNumber());
         statement.setDate(2, new java.sql.Date(acc.getIncorporatedDate().getTime()));
-        statement.setDate(3, new java.sql.Date(acc.getDeadline().getTime()));
-         statement.setDate(4, new java.sql.Date(acc.getSessionDate().getTime()));
-        statement.setString(5, String.valueOf(acc.getType()));
-        statement.setString(6, acc.getObservations());
-        statement.setBoolean(7, acc.isPublished());
-        statement.setBoolean(8, acc.isNotified());
-        statement.setInt(9, acc.getState());
-        statement.setDate(10, new java.sql.Date(acc.getNotificationDate().getTime()));
+        statement.setTime(3, java.sql.Time.valueOf(acc.getIncorporatedTime()));
+        statement.setDate(4, new java.sql.Date(acc.getDeadline().getTime()));
+        statement.setDate(5, new java.sql.Date(acc.getSessionDate().getTime()));
+        statement.setString(6, String.valueOf(acc.getType()));
+        statement.setString(7, acc.getObservations());
+        statement.setBoolean(8, acc.isPublished());
+        statement.setBoolean(9, acc.isNotified());
+        statement.setInt(10, acc.getState());
        // String command="call insertAccord('%s','%s','%s','%s','%c','%s',%b,%b,%d);";
       // String.format(command,acc.getAccNumber(),incordate,deadline,sessDate,acc.getType(),acc.getObservations(),false,false,acc.getState() );
         statement.executeUpdate();
@@ -97,6 +101,15 @@ public class Dao {
         CallableStatement statement = this.db.getConnection().prepareCall("{call insertTempUser(?, ?)}");
         statement.setString(1, tmp.getName());
         statement.setString(2, tmp.getEmail());
+        statement.executeUpdate();
+        statement.close();
+        this.db.disconnect();
+    }
+    
+    public void insertAccordNotification(String accord) throws Exception{
+        this.db.connect();
+        CallableStatement statement = this.db.getConnection().prepareCall("{call insertAccNotification(?)}");
+        statement.setString(1, accord);
         statement.executeUpdate();
         statement.close();
         this.db.disconnect();
@@ -147,7 +160,6 @@ public class Dao {
                 a.setSessionDate(rs.getDate("SESSIONDATE"));
                 a.setType(rs.getString("TYPE_ID").charAt(0));
                 a.setObservations(rs.getString("OBSERVATIONS"));
-                a.setNotificationDate(rs.getDate("NOTIFDATE")); 
                 a.setNotified(rs.getBoolean("NOTIFIED"));
                 a.setPublished(rs.getBoolean("PUBLIC"));
                 a.setState(rs.getInt("STATE"));
@@ -183,7 +195,6 @@ public class Dao {
                 a.setSessionDate(rs.getDate("SESSIONDATE"));
                 a.setType(rs.getString("TYPE_ID").charAt(0));
                 a.setObservations(rs.getString("OBSERVATIONS"));
-                a.setNotificationDate(rs.getDate("NOTIFDATE"));
                 a.setNotified(rs.getBoolean("NOTIFIED"));
                 a.setPublished(rs.getBoolean("PUBLIC"));
                 a.setState(rs.getInt("STATE"));
@@ -222,7 +233,6 @@ public class Dao {
                 a.setSessionDate(rs.getDate("SESSIONDATE"));
                 a.setType(rs.getString("TYPE_ID").charAt(0));
                 a.setObservations(rs.getString("OBSERVATIONS"));
-                a.setNotificationDate(rs.getDate("NOTIFDATE"));
                 a.setNotified(rs.getBoolean("NOTIFIED"));
                 a.setPublished(rs.getBoolean("PUBLIC"));
                 a.setState(rs.getInt("STATE"));
@@ -257,7 +267,6 @@ public class Dao {
                 a.setIncorporatedDate(rs.getDate("INCORDATE"));
                 a.setDeadline(rs.getDate("DEADLINE"));
                 a.setSessionDate(rs.getDate("SESSIONDATE"));
-                a.setNotificationDate(rs.getDate("NOTIFDATE"));
                 a.setType(rs.getString("TYPE_ID").charAt(0));
                 a.setObservations(rs.getString("OBSERVATIONS"));
                 a.setNotified(rs.getBoolean("NOTIFIED"));
@@ -292,9 +301,7 @@ public class Dao {
                 a.setAccNumber(accNumber);
                 a.setIncorporatedDate(rs.getDate("INCORDATE"));
                 a.setDeadline(rs.getDate("DEADLINE"));
-                a.setNotificationDate(rs.getDate("NOTIFDATE"));
-                a.setSessionDate(rs.getDate("SESSIONDATE"));
-                a.setNotificationDate(rs.getDate("NOTIFDATE"));  
+                a.setSessionDate(rs.getDate("SESSIONDATE")); 
                 a.setType(rs.getString("TYPE_ID").charAt(0));
                 a.setObservations(rs.getString("OBSERVATIONS"));
                 a.setNotified(rs.getBoolean("NOTIFIED"));
@@ -418,7 +425,6 @@ public class Dao {
                 a.setSessionDate(rs.getDate("SESSIONDATE"));
                 a.setType(rs.getString("TYPE_ID").charAt(0));
                 a.setObservations(rs.getString("OBSERVATIONS"));
-                a.setNotificationDate(rs.getDate("NOTIFDATE"));
                 a.setNotified(rs.getBoolean("NOTIFIED"));
                 a.setPublished(rs.getBoolean("PUBLIC"));
                 a.setState(rs.getInt("STATE"));
@@ -460,7 +466,6 @@ public class Dao {
                 a.setSessionDate(rs.getDate("SESSIONDATE"));
                 a.setType(rs.getString("TYPE_ID").charAt(0));
                 a.setObservations(rs.getString("OBSERVATIONS"));
-                a.setNotificationDate(rs.getDate("NOTIFDATE"));
                 a.setNotified(rs.getBoolean("NOTIFIED"));
                 a.setPublished(rs.getBoolean("PUBLIC"));
                 a.setState(rs.getInt("STATE"));
@@ -554,6 +559,29 @@ public class Dao {
                this.db.disconnect();
                
                
+           }
+           
+           public List<Accord> emailInfo(Date actual, Date limit) throws Exception{
+               this.db.connect();
+        CallableStatement statement = this.db.getConnection().prepareCall("{call searchExpiredAccords(? , ?)}");        
+        statement.setDate(1, new java.sql.Date(actual.getTime()));
+        statement.setDate(2,new java.sql.Date( limit.getTime()));
+        ResultSet rs = statement.executeQuery();
+        Map<String, Accord> map = new HashMap();
+
+        while (rs.next()) {
+            
+                String accNumber = rs.getString("ACCNUMBER");
+                Accord a = new Accord();                                                 //in the map
+                a.setAccNumber(accNumber);
+                a.setIncorporatedDate(rs.getDate("INCORDATE"));
+               // a.setIncorporatedTime(rs.getTime("INCORTIME").toLocalTime());
+               map.put(accNumber, a);
+        }
+       
+        statement.close();
+        this.db.disconnect();
+       return new ArrayList<>(map.values());
            }
            
 }
