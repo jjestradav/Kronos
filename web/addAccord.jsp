@@ -65,10 +65,6 @@
                                 </div>
                             </span>
                         </div>
-<<<<<<< HEAD
-=======
-                        
->>>>>>> 5545e02ccac361462616f6a0648470b81105c8d6
                         <div id="divDeadline" class="col">
                             <div class="form-group">
                                 <div class="col-sm-11">
